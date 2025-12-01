@@ -1,0 +1,11 @@
+node_modules/
+src/
+tests/
+.github/
+.vscode/
+.env
+.DS_Store
+coverage/
+.gitignore
+package-lock.json
+*.log
