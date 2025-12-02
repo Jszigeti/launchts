@@ -176,7 +176,6 @@ Look for issues labeled [`good first issue`](https://github.com/Jszigeti/launcht
    ```
 
 2. **Make your changes:**
-
    - Write code
    - Add/update tests
    - Update documentation if needed
@@ -197,7 +196,6 @@ Look for issues labeled [`good first issue`](https://github.com/Jszigeti/launcht
    ```
 
    Use [conventional commits](https://www.conventionalcommits.org/):
-
    - `feat:` New feature
    - `fix:` Bug fix
    - `docs:` Documentation changes
@@ -212,7 +210,6 @@ Look for issues labeled [`good first issue`](https://github.com/Jszigeti/launcht
    ```
 
    Then open a Pull Request on GitHub with:
-
    - Clear description of changes
    - Link to related issues
    - Screenshots/examples if applicable
