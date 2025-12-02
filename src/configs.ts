@@ -30,9 +30,9 @@ export const DEFAULT_OPTIONS: Omit<ToolOptions, 'yes' | 'default'> = {
  */
 export const TOOL_CONFIGS = {
   nodemon: {
-    deps: ['nodemon', 'ts-node'],
+    deps: ['nodemon', 'tsx'],
     scripts: {
-      dev: 'nodemon --watch src -e ts --exec "ts-node src/index.ts"',
+      dev: 'nodemon --watch src -e ts --exec "tsx src/index.ts"',
     },
   },
   eslint: {

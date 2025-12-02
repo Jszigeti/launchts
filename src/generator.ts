@@ -387,25 +387,6 @@ export async function createProject(opts: CreateOptions) {
             'node_modules\ndist\n.env\n',
             'utf8',
           );
-          if (!(toolOptions.noCommit ?? false)) {
-            try {
-              runCommand(
-                'git',
-                ['add', '-A'],
-                target,
-                toolOptions.verbose ?? false,
-              );
-              runCommand(
-                'git',
-                ['commit', '-m', 'chore: initial commit'],
-                target,
-                toolOptions.verbose ?? false,
-              );
-            } catch (e) {
-              const errMsg = e instanceof Error ? e.message : String(e);
-              console.warn(MESSAGES.gitCommitFailed(errMsg));
-            }
-          }
         }
       }
     } catch (e) {
@@ -445,6 +426,58 @@ export async function createProject(opts: CreateOptions) {
     } catch (e) {
       const errMsg = e instanceof Error ? e.message : String(e);
       console.warn(MESSAGES.installFailed(pm, errMsg));
+    }
+  }
+
+  // Git initial commit AFTER npm install to include package-lock.json
+  if ((toolOptions.git ?? true) && !(toolOptions.noCommit ?? false)) {
+    try {
+      const gitAvailable = runCommand(
+        'git',
+        ['--version'],
+        target,
+        false,
+        true,
+      );
+      if (gitAvailable) {
+        const insideRepo = runCommand(
+          'git',
+          ['rev-parse', '--is-inside-work-tree'],
+          target,
+          false,
+          true,
+        );
+        const hasCommits = runCommand(
+          'git',
+          ['rev-parse', 'HEAD'],
+          target,
+          false,
+          true,
+        );
+
+        if (!insideRepo || !hasCommits) {
+          try {
+            runCommand(
+              'git',
+              ['add', '-A'],
+              target,
+              toolOptions.verbose ?? false,
+            );
+            runCommand(
+              'git',
+              ['commit', '-m', 'chore: initial commit'],
+              target,
+              toolOptions.verbose ?? false,
+            );
+          } catch (e) {
+            const errMsg = e instanceof Error ? e.message : String(e);
+            console.warn(MESSAGES.gitCommitFailed(errMsg));
+          }
+        }
+      }
+    } catch (e) {
+      const errMsg = e instanceof Error ? e.message : String(e);
+      console.warn(MESSAGES.gitCommitFailed(errMsg));
     }
   }
 }
