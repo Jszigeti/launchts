@@ -1,6 +1,6 @@
 {
   "name": "launchts",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Fast, interactive CLI to scaffold TypeScript projects",
   "bin": {
     "launchts": "dist/cli.js"
