@@ -87,11 +87,11 @@ export default tseslint.config(
   },
   husky: {
     deps: ['husky', 'lint-staged'],
-    scripts: { prepare: 'husky install' },
+    scripts: { prepare: 'echo "Husky is managed automatically"' },
     lintStaged: {
       '*.ts': ['eslint --fix', 'prettier --write'],
       '*.json': ['prettier --write'],
     },
-    preCommitHook: `#!/bin/sh\n. $(dirname "$0")/_/husky.sh\nnpx lint-staged\n`,
+    preCommitHook: 'npx lint-staged\n',
   },
 } as const;
