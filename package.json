@@ -30,7 +30,7 @@
   "author": "Jonas Szigeti <jonas.szigeti@icloud.com>",
   "license": "MIT",
   "dependencies": {
-    "cac": "^6.7.2",
+    "cac": "^7.0.0",
     "enquirer": "^2.3.6",
     "fs-extra": "^11.1.1"
   },
