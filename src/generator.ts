@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs-extra';
-import { spawnSync } from 'child_process';
+import { spawn } from 'child_process';
 import type { CreateOptions, RootPackage, GeneratedPackage } from './types';
 import { TOOL_CONFIGS } from './configs';
 import { MESSAGES } from './messages';
@@ -12,22 +12,30 @@ function runCommand(
   cwd: string,
   verbose: boolean,
   silent = false,
-): boolean {
-  const result = spawnSync(command, args, {
-    cwd,
-    stdio: verbose ? 'inherit' : 'pipe',
-  });
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    const child = spawn(command, args, {
+      cwd,
+      stdio: verbose ? 'inherit' : 'pipe',
+    });
 
-  // Log errors even in non-verbose mode for better debugging
-  // Skip logging if silent=true (for check commands like git rev-parse)
-  if (result.status !== 0 && !verbose && !silent && result.stderr) {
-    const stderrOutput = result.stderr.toString().trim();
-    if (stderrOutput) {
-      console.error(`Error running ${command}: ${stderrOutput}`);
+    let stderr = '';
+    if (!verbose && child.stderr) {
+      child.stderr.on('data', (data: Buffer) => {
+        stderr += data.toString();
+      });
     }
-  }
 
-  return result.status === 0;
+    child.on('close', (code) => {
+      if (code !== 0 && !verbose && !silent && stderr) {
+        const trimmed = stderr.trim();
+        if (trimmed) console.error(`Error running ${command}: ${trimmed}`);
+      }
+      resolve(code === 0);
+    });
+
+    child.on('error', () => resolve(false));
+  });
 }
 
 // Validate project name: alphanumeric, hyphens, underscores, 1-214 characters
@@ -364,7 +372,7 @@ export async function createProject(opts: CreateOptions) {
   // optionally initialize git and install dependencies
   if (toolOptions.git ?? true) {
     try {
-      const gitAvailable = runCommand(
+      const gitAvailable = await runCommand(
         'git',
         ['--version'],
         target,
@@ -372,16 +380,21 @@ export async function createProject(opts: CreateOptions) {
         true,
       );
       if (gitAvailable) {
-        const insideRepo = runCommand(
+        const insideRepo = await runCommand(
           'git',
           ['rev-parse', '--is-inside-work-tree'],
           target,
           false,
-          true, // silent check - don't log error if not in a repo
+          true,
         );
 
         if (!insideRepo) {
-          runCommand('git', ['init'], target, toolOptions.verbose ?? false);
+          await runCommand(
+            'git',
+            ['init'],
+            target,
+            toolOptions.verbose ?? false,
+          );
           await fs.outputFile(
             path.join(target, '.gitignore'),
             'node_modules\ndist\n.env\n',
@@ -396,18 +409,12 @@ export async function createProject(opts: CreateOptions) {
   }
 
   if (toolOptions.install ?? true) {
-    const pm = (toolOptions && toolOptions.pm) || 'npm';
+    const pm = toolOptions.pm ?? 'npm';
     try {
-      if (pm === 'pnpm') {
-        runCommand('pnpm', ['install'], target, toolOptions.verbose ?? false);
-      } else if (pm === 'yarn') {
-        runCommand('yarn', ['install'], target, toolOptions.verbose ?? false);
-      } else {
-        runCommand('npm', ['install'], target, toolOptions.verbose ?? false);
-      }
+      await runCommand(pm, ['install'], target, toolOptions.verbose ?? false);
 
       if (toolOptions.husky) {
-        runCommand(
+        await runCommand(
           'npx',
           ['husky', 'install'],
           target,
@@ -415,7 +422,7 @@ export async function createProject(opts: CreateOptions) {
         );
         const preCommitHook = path.join(target, '.husky', 'pre-commit');
         if (!(await fs.pathExists(preCommitHook))) {
-          runCommand(
+          await runCommand(
             'npx',
             ['husky', 'add', '.husky/pre-commit', 'npx lint-staged'],
             target,
@@ -429,10 +436,10 @@ export async function createProject(opts: CreateOptions) {
     }
   }
 
-  // Git initial commit AFTER npm install to include package-lock.json
+  // Git initial commit AFTER install to include lockfile
   if ((toolOptions.git ?? true) && !(toolOptions.noCommit ?? false)) {
     try {
-      const gitAvailable = runCommand(
+      const gitAvailable = await runCommand(
         'git',
         ['--version'],
         target,
@@ -440,14 +447,14 @@ export async function createProject(opts: CreateOptions) {
         true,
       );
       if (gitAvailable) {
-        const insideRepo = runCommand(
+        const insideRepo = await runCommand(
           'git',
           ['rev-parse', '--is-inside-work-tree'],
           target,
           false,
           true,
         );
-        const hasCommits = runCommand(
+        const hasCommits = await runCommand(
           'git',
           ['rev-parse', 'HEAD'],
           target,
@@ -457,13 +464,13 @@ export async function createProject(opts: CreateOptions) {
 
         if (insideRepo && !hasCommits) {
           try {
-            runCommand(
+            await runCommand(
               'git',
               ['add', '-A'],
               target,
               toolOptions.verbose ?? false,
             );
-            runCommand(
+            await runCommand(
               'git',
               ['commit', '-m', 'chore: initial commit'],
               target,

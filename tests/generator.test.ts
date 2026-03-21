@@ -12,7 +12,10 @@ afterEach(async () => {
 
 describe('createProject', () => {
   it('creates a minimal project', async () => {
-    await createProject({ name: tmpDir, options: { yes: true } });
+    await createProject({
+      name: tmpDir,
+      options: { git: false, install: false },
+    });
     const exists = await fs.pathExists(path.join(tmpDir, 'package.json'));
     expect(exists).toBe(true);
   });

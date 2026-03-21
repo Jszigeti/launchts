@@ -62,107 +62,16 @@ const pkg = JSON.parse(
 );
 cli.version(pkg.version);
 
-// lightweight argv flag parser to be used when invoking the binary without
-// explicit command. This allows `launchts` (no args) to start the
-// interactive create flow and still respect flags like `--yes` or `--pm`.
-function parseFlagsFromArgv(argv: string[]): Partial<ToolOptions> {
-  const out: Partial<ToolOptions> = {};
-  const args = argv.slice(2);
-
-  // Simple boolean flag mapping
-  const booleanFlags: Record<
-    string,
-    keyof Pick<
-      ToolOptions,
-      | 'yes'
-      | 'useDefaults'
-      | 'eslint'
-      | 'prettier'
-      | 'husky'
-      | 'nodemon'
-      | 'git'
-      | 'install'
-      | 'noCommit'
-      | 'verbose'
-    >
-  > = {
-    '-y': 'yes',
-    '--yes': 'yes',
-    '-d': 'useDefaults',
-    '--default': 'useDefaults',
-    '--eslint': 'eslint',
-    '--prettier': 'prettier',
-    '--husky': 'husky',
-    '--nodemon': 'nodemon',
-    '--git': 'git',
-    '--install': 'install',
-    '--no-commit': 'noCommit',
-    '--verbose': 'verbose',
-  };
-
-  const knownFlags = new Set([
-    ...Object.keys(booleanFlags),
-    '--no-git',
-    '--no-install',
-    '--pm',
-    '-h',
-    '--help',
-    '-v',
-    '--version',
-  ]);
-
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i];
-
-    // Handle boolean flags
-    if (arg in booleanFlags) {
-      const key = booleanFlags[arg];
-      (out as Record<string, boolean>)[key] = true;
-    } else if (arg === '--no-git') {
-      out.git = false;
-    } else if (arg === '--no-install') {
-      out.install = false;
-    } else if (arg.startsWith('--pm=')) {
-      const pmValue = arg.split('=', 2)[1];
-      if (['npm', 'yarn', 'pnpm'].includes(pmValue)) {
-        out.pm = pmValue as ToolOptions['pm'];
-      } else {
-        console.warn(MESSAGES.unknownPackageManager(pmValue));
-        out.pm = 'npm';
-      }
-    } else if (arg === '--pm') {
-      const pmValue = args[i + 1];
-      if (['npm', 'yarn', 'pnpm'].includes(pmValue)) {
-        out.pm = pmValue as ToolOptions['pm'];
-      } else {
-        console.warn(MESSAGES.unknownPackageManager(pmValue));
-        out.pm = 'npm';
-      }
-      i++;
-    } else if (
-      arg.startsWith('-') &&
-      !knownFlags.has(arg) &&
-      !arg.startsWith('--pm=')
-    ) {
-      console.warn(MESSAGES.unknownFlag(arg));
-    }
-  }
-  return out;
-}
-
 // Parse normally to register commands/options with cac
 cli.parse();
 
-// If no command was provided, start the interactive create flow by default.
-// We avoid blocking the non-interactive help output when the user explicitly
-// asked for `--help` or `--version` because cac handles those earlier.
+// cac does not fire the action for the no-args case — trigger the interactive
+// flow manually. --help and --version are handled by cac before this point.
 if (process.argv.length <= 2) {
   (async () => {
-    const flags = parseFlagsFromArgv(process.argv);
     try {
-      await runCreateFlow(undefined, flags);
+      await runCreateFlow(undefined, {});
     } catch (e) {
-      // Show error then exit non-zero
       console.error('✖', e instanceof Error ? e.message : e);
       process.exit(1);
     }

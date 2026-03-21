@@ -54,7 +54,7 @@ You'll be asked about:
 - **ESLint** — TypeScript linting with recommended rules
 - **Prettier** — Code formatting with opinionated defaults
 - **Husky** — Pre-commit hooks with lint-staged
-- **nodemon** — Auto-reload dev script with ts-node
+- **nodemon** — Auto-reload dev script with tsx
 - **Git** — Initialize repository with .gitignore
 - **Install** — Run `npm install` automatically
 
@@ -233,13 +233,13 @@ Adds development auto-reload:
 **Packages:**
 
 - `nodemon`
-- `ts-node`
+- `tsx`
 
 ---
 
 ## Requirements
 
-- **Node.js** 18.0.0 or higher
+- **Node.js** 20.19.0 or higher
 - **npm** 7+ (or **yarn** 1.22+, **pnpm** 7+)
 
 ---
