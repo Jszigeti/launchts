@@ -78,6 +78,43 @@ function baseTsconfig() {
 }
 
 // Helper functions for README generation
+
+type ScriptEntry = { cmd: string; short: string; desc: string };
+
+function getActiveScripts(
+  toolOptions: CreateOptions['options'],
+): ScriptEntry[] {
+  const scripts: ScriptEntry[] = [
+    {
+      cmd: 'npm run build',
+      short: 'build  ',
+      desc: 'Compiles TypeScript files to JavaScript in the `dist/` directory',
+    },
+  ];
+  if (toolOptions?.nodemon) {
+    scripts.push({
+      cmd: 'npm run dev',
+      short: 'dev    ',
+      desc: 'Starts the development server with auto-reload on file changes',
+    });
+  }
+  if (toolOptions?.eslint) {
+    scripts.push({
+      cmd: 'npm run lint',
+      short: 'lint   ',
+      desc: 'Checks code quality with ESLint',
+    });
+  }
+  if (toolOptions?.prettier) {
+    scripts.push({
+      cmd: 'npm run format',
+      short: 'format ',
+      desc: 'Formats all files with Prettier',
+    });
+  }
+  return scripts;
+}
+
 function generateReadmeHeader(projectName: string): string {
   return `# ${projectName}
 
@@ -88,27 +125,17 @@ TypeScript project generated with [launchts](https://github.com/Jszigeti/launcht
 }
 
 function generateReadmeScripts(toolOptions: CreateOptions['options']): string {
-  let scripts = `### Development
+  const lines = getActiveScripts(toolOptions)
+    .map(
+      ({ cmd, short }) => `npm run ${short} # ${cmd.replace('npm run ', '')}`,
+    )
+    .join('\n');
+  return `### Development
 
 \`\`\`bash
-npm run build    # Compile TypeScript to JavaScript
+${lines}
+\`\`\`
 `;
-
-  if (toolOptions?.nodemon) {
-    scripts += `npm run dev      # Start development server with auto-reload\n`;
-  }
-
-  if (toolOptions?.eslint) {
-    scripts += `npm run lint     # Run ESLint\n`;
-  }
-
-  if (toolOptions?.prettier) {
-    scripts += `npm run format   # Format code with Prettier\n`;
-  }
-
-  scripts += `\`\`\`
-`;
-  return scripts;
 }
 
 function generateReadmeStructure(
@@ -134,11 +161,9 @@ ${projectName}/
     structure += `├── .prettierrc        # Prettier configuration\n`;
   }
 
-  if (toolOptions?.husky) {
-    structure += `└── .husky/            # Git hooks\n`;
-  } else {
-    structure += `└── ...\n`;
-  }
+  structure += toolOptions?.husky
+    ? `└── .husky/            # Git hooks\n`
+    : `└── ...\n`;
 
   structure += `\`\`\`
 `;
@@ -154,21 +179,13 @@ function generateReadmeTechStack(
 - **Node.js** - Runtime environment with ESM modules
 `;
 
-  if (toolOptions?.eslint) {
+  if (toolOptions?.eslint)
     techStack += `- **ESLint** - Code quality and consistency with TypeScript support\n`;
-  }
-
-  if (toolOptions?.prettier) {
-    techStack += `- **Prettier** - Code formatting\n`;
-  }
-
-  if (toolOptions?.nodemon) {
+  if (toolOptions?.prettier) techStack += `- **Prettier** - Code formatting\n`;
+  if (toolOptions?.nodemon)
     techStack += `- **Nodemon** - Auto-reload during development\n`;
-  }
-
-  if (toolOptions?.husky) {
+  if (toolOptions?.husky)
     techStack += `- **Husky + lint-staged** - Pre-commit hooks for code quality\n`;
-  }
 
   return techStack;
 }
@@ -176,25 +193,10 @@ function generateReadmeTechStack(
 function generateReadmeScriptsDetails(
   toolOptions: CreateOptions['options'],
 ): string {
-  let scriptsDetails = `
-## Scripts
-
-- \`npm run build\` - Compiles TypeScript files to JavaScript in the \`dist/\` directory
-`;
-
-  if (toolOptions?.nodemon) {
-    scriptsDetails += `- \`npm run dev\` - Starts the development server with auto-reload on file changes\n`;
-  }
-
-  if (toolOptions?.eslint) {
-    scriptsDetails += `- \`npm run lint\` - Checks code quality with ESLint\n`;
-  }
-
-  if (toolOptions?.prettier) {
-    scriptsDetails += `- \`npm run format\` - Formats all files with Prettier\n`;
-  }
-
-  return scriptsDetails;
+  const lines = getActiveScripts(toolOptions)
+    .map(({ cmd, desc }) => `- \`${cmd}\` - ${desc}`)
+    .join('\n');
+  return `\n## Scripts\n\n${lines}\n`;
 }
 
 function generateReadmeGitHooks(toolOptions: CreateOptions['options']): string {
@@ -213,19 +215,15 @@ function generateReadme(
   projectName: string,
   toolOptions: CreateOptions['options'],
 ) {
-  let readme = generateReadmeHeader(projectName);
-  readme += generateReadmeScripts(toolOptions);
-  readme += generateReadmeStructure(projectName, toolOptions);
-  readme += generateReadmeTechStack(toolOptions);
-  readme += generateReadmeScriptsDetails(toolOptions);
-  readme += generateReadmeGitHooks(toolOptions);
-  readme += `
-## License
-
-MIT
-`;
-
-  return readme;
+  return [
+    generateReadmeHeader(projectName),
+    generateReadmeScripts(toolOptions),
+    generateReadmeStructure(projectName, toolOptions),
+    generateReadmeTechStack(toolOptions),
+    generateReadmeScriptsDetails(toolOptions),
+    generateReadmeGitHooks(toolOptions),
+    '\n## License\n\nMIT\n',
+  ].join('');
 }
 
 // Helper to get dependency version from root package.json or fallback

@@ -10,7 +10,7 @@
     "dev": "ts-node src/cli.ts",
     "test": "vitest",
     "lint": "eslint .",
-    "prepare": "husky install",
+    "prepare": "husky",
     "format": "prettier --write ."
   },
   "lint-staged": {
