@@ -3,7 +3,7 @@ import type { ToolOptions } from './types';
 /**
  * Default configuration when using --yes flag (all options enabled)
  */
-export const YES_DEFAULTS: Omit<ToolOptions, 'yes' | 'default'> = {
+export const YES_DEFAULTS: Omit<ToolOptions, 'yes' | 'useDefaults'> = {
   eslint: true,
   prettier: true,
   husky: true,
@@ -15,7 +15,7 @@ export const YES_DEFAULTS: Omit<ToolOptions, 'yes' | 'default'> = {
 /**
  * Default configuration when using --default flag (sensible defaults)
  */
-export const DEFAULT_OPTIONS: Omit<ToolOptions, 'yes' | 'default'> = {
+export const DEFAULT_OPTIONS: Omit<ToolOptions, 'yes' | 'useDefaults'> = {
   eslint: false,
   prettier: true,
   husky: false,

@@ -455,7 +455,7 @@ export async function createProject(opts: CreateOptions) {
           true,
         );
 
-        if (!insideRepo || !hasCommits) {
+        if (insideRepo && !hasCommits) {
           try {
             runCommand(
               'git',

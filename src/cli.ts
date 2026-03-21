@@ -29,6 +29,7 @@ cli
   .option('--install', 'Run package manager install in the created project')
   .option('--no-git', 'Do not initialize a git repository')
   .option('--no-install', 'Do not run package manager install')
+  .option('-d, --default', 'Skip prompts and use sensible defaults')
   .option('--verbose', 'Show verbose output during scaffold')
   .option('--no-commit', 'Do not make initial git commit')
   .example(
@@ -41,9 +42,18 @@ cli
     '  $ launchts my-app --default         Create with sensible defaults',
   )
   .example('  $ launchts my-app --pm pnpm         Use pnpm as package manager')
-  .action(async (name: string, options: Partial<ToolOptions>) => {
-    await runCreateFlow(name, options);
-  });
+  .action(
+    async (
+      name: string,
+      options: Partial<ToolOptions> & { default?: boolean },
+    ) => {
+      const { default: useDefaultsAlias, ...rest } = options;
+      await runCreateFlow(name, {
+        ...rest,
+        useDefaults: useDefaultsAlias ?? rest.useDefaults,
+      });
+    },
+  );
 
 cli.help();
 
