@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-03-21
+
+### Added
+
+- `start: node dist/index.js` script in all generated projects (was documented in README but never actually generated)
+- `vitest.config.ts` with explicit test include pattern and timeout
+- 7 unit tests for `detectPackageManager` covering user agent parsing, lockfile detection, and npm fallback
+- `-d, --default` flag now properly registered in cac — was dead code before (only handled in a parser that never ran with flags)
+
+### Changed
+
+- Extended generated `.gitignore`: now includes `.env.local`, `*.log`, `npm-debug.log*`, `coverage/`, `.DS_Store`
+- Replaced `spawnSync` with async `spawn` in generator — no longer blocks the event loop during git and install operations
+- `dev` script in root project switched from `ts-node` to `tsx` for consistency with generated projects
+- `prepare` script updated from deprecated `husky install` to `husky`
+- ESLint config: replaced `globals.jest` with `globals.vitest`
+- `publish.yml` workflow: Node 18 (EOL) → Node 20 to match CI
+- `generator.test.ts`: disabled real `npm install` (was the only test running a live install, now consistent with all other tests)
+- Pinned `tsx ^4.21.0` in devDependencies so generated projects get a deterministic version instead of `latest`
+- Node.js minimum requirement bumped to 20.19.0 (required by cac v7)
+- README: corrected `ts-node` → `tsx` in nodemon section, updated Node.js requirement
+
+### Fixed
+
+- Git commit guard condition was `!insideRepo || !hasCommits` — would attempt to commit outside a git repo; corrected to `insideRepo && !hasCommits`
+- `Omit<ToolOptions, 'yes' | 'default'>` used a non-existent key `'default'` — corrected to `'useDefaults'`
+- `--no-commit` test now asserts `git rev-parse HEAD` fails (repo has no commits), not just that `.git` exists
+
+### Removed
+
+- `parseFlagsFromArgv` (80 lines of dead code — only executed with zero CLI arguments, always returned `{}`)
+- `.husky/pre-commit.bak` stale backup file
+
 ## [1.0.8] - 2026-01-19
 
 ### Changed
