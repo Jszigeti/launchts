@@ -7,7 +7,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "dev": "ts-node src/cli.ts",
+    "dev": "tsx src/cli.ts",
     "test": "vitest",
     "lint": "eslint .",
     "prepare": "husky",

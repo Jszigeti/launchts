@@ -92,7 +92,10 @@ describe('createProject options', () => {
     });
 
     const pkg = await fs.readJSON(path.join(name, 'package.json'));
-    expect(pkg.scripts).toEqual({ build: 'tsc -p tsconfig.json' });
+    expect(pkg.scripts).toEqual({
+      build: 'tsc -p tsconfig.json',
+      start: 'node dist/index.js',
+    });
     expect(pkg.devDependencies).toEqual({ typescript: expect.any(String) });
   });
 

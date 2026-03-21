@@ -54,6 +54,7 @@ function minimalPackageJson(projectName: string) {
     type: 'module',
     scripts: {
       build: 'tsc -p tsconfig.json',
+      start: 'node dist/index.js',
     },
   };
 }
@@ -395,7 +396,27 @@ export async function createProject(opts: CreateOptions) {
           );
           await fs.outputFile(
             path.join(target, '.gitignore'),
-            'node_modules\ndist\n.env\n',
+            [
+              '# Dependencies',
+              'node_modules/',
+              '',
+              '# Build output',
+              'dist/',
+              '',
+              '# Environment',
+              '.env',
+              '.env.local',
+              '',
+              '# Logs',
+              '*.log',
+              'npm-debug.log*',
+              '',
+              '# Test coverage',
+              'coverage/',
+              '',
+              '# OS',
+              '.DS_Store',
+            ].join('\n') + '\n',
             'utf8',
           );
         }

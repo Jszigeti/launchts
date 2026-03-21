@@ -78,7 +78,7 @@ if (process.argv.length <= 2) {
   })();
 }
 
-function detectPackageManager(): 'npm' | 'yarn' | 'pnpm' {
+export function detectPackageManager(): 'npm' | 'yarn' | 'pnpm' {
   const ua = process.env.npm_config_user_agent;
   if (ua) {
     if (ua.startsWith('pnpm')) return 'pnpm';

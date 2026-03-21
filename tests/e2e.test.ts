@@ -167,7 +167,10 @@ describe('End-to-End Workflows', () => {
 
     // Verify package.json is minimal
     const pkg = await fs.readJSON(path.join(projectPath, 'package.json'));
-    expect(pkg.scripts).toEqual({ build: 'tsc -p tsconfig.json' });
+    expect(pkg.scripts).toEqual({
+      build: 'tsc -p tsconfig.json',
+      start: 'node dist/index.js',
+    });
     expect(pkg.devDependencies).toEqual({ typescript: expect.any(String) });
 
     // Verify README is minimal

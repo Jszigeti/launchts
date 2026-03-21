@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
+import { spawnSync } from 'child_process';
 import { createProject } from '../src/generator';
 
 const tmpRoot = path.join(os.tmpdir(), 'launchts-flags-tests');
@@ -70,10 +71,12 @@ describe('Flag options', () => {
       },
     });
 
-    // .gitignore should exist (git init was done)
+    // .gitignore and .git should exist (git init was done)
     expect(await fs.pathExists(path.join(name, '.gitignore'))).toBe(true);
-    // .git folder should exist (git init was done)
     expect(await fs.pathExists(path.join(name, '.git'))).toBe(true);
+    // HEAD should not resolve — the repo has no commits
+    const result = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: name });
+    expect(result.status).not.toBe(0);
   });
 
   it('respects --verbose flag', async () => {
