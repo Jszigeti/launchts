@@ -1,3 +1,5 @@
+> Stable and no longer maintained. It does what it says, I just do not plan new features. Issues stay open for reading.
+
 # launchts
 
 [![npm version](https://img.shields.io/npm/v/launchts.svg)](https://www.npmjs.com/package/launchts)
